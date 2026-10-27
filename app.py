@@ -5,6 +5,7 @@ import copy
 import os
 import threading
 import time
+import traceback
 from pathlib import Path
 
 import cv2
@@ -20,11 +21,15 @@ MODULE_DIRECTORY = Path(__file__).resolve().parent
 PROJECT_ROOT = MODULE_DIRECTORY.parent
 app = Flask(__name__, static_folder=None)
 STATE_LOCK = threading.Lock()
-FRAME_LOCK = threading.Lock()
+# FRAME_COND guards LATEST_JPEG / FRAME_ID. The camera worker is the only writer
+# (and the only thing that ever opens the camera); /video_feed clients only read.
+FRAME_COND = threading.Condition()
 STOP_EVENT = threading.Event()
 LATEST_JPEG = b""
+FRAME_ID = 0
 PENDING_AT = 0.0
 CAMERA_THREAD = None
+STREAM_JPEG_QUALITY = 70
 STATE = {
     "camera_status": "starting",
     "face_status": "ready",
@@ -54,8 +59,19 @@ def selected_action_message(person, action):
     return "Confirm the selected attendance action below.", True
 
 
+def publish_frame(frame):
+    """Encode a frame once and hand it to every /video_feed client."""
+    global LATEST_JPEG, FRAME_ID
+    success, encoded = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, STREAM_JPEG_QUALITY])
+    if success:
+        with FRAME_COND:
+            LATEST_JPEG = encoded.tobytes()
+            FRAME_ID += 1
+            FRAME_COND.notify_all()
+
+
 def camera_worker():
-    global LATEST_JPEG, PENDING_AT
+    global PENDING_AT
     camera = None
     try:
         api_url = os.environ.get("SMART_LIBRARY_API_URL", "https://final-the-smart-library-system.onrender.com")
@@ -69,6 +85,7 @@ def camera_worker():
             models["face_recognition_sface_2021dec.onnx"],
         )
         library_api = SmartLibraryApi(api_url, api_key)
+        # The one and only place the camera is opened.
         camera = Camera(int(os.environ.get("SMART_LIBRARY_CAMERA", "0")))
         people = []
         active_person_id = None
@@ -156,12 +173,10 @@ def camera_worker():
                         STATE["face_status"] = "ready"
                         STATE["message"] = "Camera ready. Select Time-in or Time-out."
 
-            success, encoded = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 82])
-            if success:
-                with FRAME_LOCK:
-                    LATEST_JPEG = encoded.tobytes()
+            publish_frame(frame)
     except Exception as error:
         update_state(camera_status="error", face_status="ready", message=f"Station startup failed: {error}")
+        traceback.print_exc()
         app.logger.exception("Face-recognition camera stopped")
     finally:
         if camera:
@@ -201,18 +216,37 @@ def station_logo():
     return send_from_directory(PROJECT_ROOT, "ptc_logo.png")
 
 
+def stream_frames():
+    """MJPEG generator. Only reads frames the camera worker already published."""
+    last_id = 0
+    while not STOP_EVENT.is_set():
+        with FRAME_COND:
+            FRAME_COND.wait_for(lambda: FRAME_ID != last_id or STOP_EVENT.is_set(), timeout=1.0)
+            if FRAME_ID == last_id:
+                continue
+            frame = LATEST_JPEG
+            last_id = FRAME_ID
+        if frame:
+            yield (
+                b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: "
+                + str(len(frame)).encode()
+                + b"\r\n\r\n"
+                + frame
+                + b"\r\n"
+            )
+
+
+@app.get("/video_feed")
+def video_feed():
+    response = Response(stream_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @app.get("/camera_feed")
 def camera_feed():
-    def stream_frames():
-        while not STOP_EVENT.is_set():
-            with FRAME_LOCK:
-                frame = LATEST_JPEG
-            if frame:
-                yield b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + frame + b"\r\n"
-            else:
-                time.sleep(0.1)
-
-    return Response(stream_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
+    # Old URL kept so nothing that still points at it breaks.
+    return video_feed()
 
 
 @app.get("/api/state")
@@ -295,6 +329,8 @@ def start_camera_thread():
 @atexit.register
 def stop_station():
     STOP_EVENT.set()
+    with FRAME_COND:
+        FRAME_COND.notify_all()
 
 
 if __name__ == "__main__":
