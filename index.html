@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#99AB9F">
+  <title>Smart Library - Face Recognition Station</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="station">
+    <header class="station-header">
+      <img src="/logo" alt="Pateros Technological College logo" class="school-logo">
+      <div class="brand-copy">
+        <h1>Smart Library System</h1>
+        <p>Pateros Technological College</p>
+      </div>
+      <div class="station-status">
+        <span class="status-dot" id="cameraDot"></span>
+        <span id="cameraStatus">Starting camera</span>
+      </div>
+    </header>
+
+    <section class="station-content" aria-labelledby="stationTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="stationTitle">Face Recognition System</h2>
+          <p>Look toward the camera and choose the attendance action.</p>
+        </div>
+        <span class="face-status" id="faceStatus">Waiting for a face</span>
+      </div>
+
+      <div class="camera-frame">
+        <img id="cameraFeed" src="/camera_feed" alt="Live face recognition camera feed">
+        <div class="camera-placeholder" id="cameraPlaceholder">Camera feed will appear here</div>
+        <div class="camera-caption">LIVE CAMERA</div>
+      </div>
+
+      <div class="mode-group" role="group" aria-label="Choose attendance action">
+        <button type="button" class="mode-button" id="timeInButton" aria-pressed="false">TIME-IN</button>
+        <button type="button" class="mode-button" id="timeOutButton" aria-pressed="false">TIME-OUT</button>
+      </div>
+
+      <p class="station-message" id="stationMessage" role="status" aria-live="polite">
+        Select Time-in or Time-out before confirming attendance.
+      </p>
+
+      <section class="recognition-card" id="recognitionCard" hidden aria-live="polite">
+        <div class="recognition-heading">
+          <div>
+            <p class="eyebrow" id="resultEyebrow">FACE RECOGNIZED</p>
+            <h3 id="resultTitle">Confirm attendance</h3>
+          </div>
+          <span class="result-mark" id="resultMark" aria-hidden="true">?</span>
+        </div>
+        <dl class="person-details" id="personDetails">
+          <div><dt>School ID</dt><dd id="personSchoolId">-</dd></div>
+          <div><dt>Full Name</dt><dd id="personName">-</dd></div>
+          <div><dt>Role</dt><dd id="personRole">-</dd></div>
+          <div><dt>Department</dt><dd id="personDepartment">-</dd></div>
+        </dl>
+        <div class="recorded-time" id="recordedTime" hidden></div>
+        <div class="confirmation-actions" id="confirmationActions">
+          <button type="button" class="cancel-button" id="cancelButton">Cancel</button>
+          <button type="button" class="confirm-button" id="confirmButton" disabled>Confirm attendance</button>
+        </div>
+      </section>
+    </section>
+  </main>
+  <script src="/script.js"></script>
+</body>
+</html>

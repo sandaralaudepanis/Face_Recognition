@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+  --page: #b3beb8;
+  --frame: #99ab9f;
+  --header: #e6ecd8;
+  --ink: #17241c;
+  --muted: #53645a;
+  --button: #f0f9e3;
+  --active: #4f6f52;
+  --danger: #a33535;
+  --success: #28663a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 16px;
+  display: grid;
+  place-items: center;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Poppins", sans-serif;
+}
+
+.station {
+  width: min(1050px, 100%);
+  min-height: min(700px, calc(100vh - 32px));
+  padding: 15px;
+  background: var(--frame);
+  border-radius: 15px;
+}
+
+.station-header {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 17px;
+  background: var(--header);
+}
+
+.school-logo { width: 50px; height: 50px; object-fit: contain; }
+.brand-copy h1 { margin: 0; color: #111; font-size: 20px; font-weight: 700; }
+.brand-copy p { margin: 2px 0 0; color: #30352f; font-size: 14px; }
+
+.station-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  color: #35463a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-dot { width: 9px; height: 9px; border-radius: 50%; background: #b58a2a; }
+.status-dot.ready { background: #3b814b; }
+.status-dot.error { background: #a33535; }
+
+.station-content { padding: 17px 0 0; }
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 2px 12px;
+}
+
+.section-heading h2 { margin: 0; font-size: 19px; font-weight: 700; }
+.section-heading p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+.face-status {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: #e6ecd8;
+  color: #34453a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.face-status.detected { background: #e3f1e3; color: var(--success); }
+.face-status.unknown { background: #f7e6e2; color: var(--danger); }
+
+.camera-frame {
+  position: relative;
+  width: 100%;
+  height: min(48vh, 440px);
+  min-height: 280px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  border: 1px solid #354039;
+  border-radius: 12px;
+  background: #1f2020;
+}
+
+#cameraFeed { width: 100%; height: 100%; object-fit: contain; }
+.camera-placeholder { position: absolute; color: #eef2ec; font-size: 19px; font-weight: 500; }
+.camera-frame:has(#cameraFeed[src]) .camera-placeholder { display: none; }
+
+.camera-caption {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 5px 9px;
+  border: 1px solid #ffffff44;
+  border-radius: 4px;
+  background: #111d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.mode-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+
+.mode-button {
+  min-height: 64px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--button);
+  color: #17241c;
+  font: 600 16px "Poppins", sans-serif;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+
+.mode-button:hover { background: #728275; color: #fff; }
+.mode-button[aria-pressed="true"] { background: var(--active); color: #fff; }
+.mode-button:focus-visible,.confirm-button:focus-visible,.cancel-button:focus-visible { outline: 3px solid #234d2c; outline-offset: 2px; }
+
+.station-message {
+  min-height: 24px;
+  margin: 10px 2px 0;
+  color: #303d34;
+  font-size: 13px;
+}
+
+.station-message.error { color: var(--danger); font-weight: 600; }
+.station-message.success { color: var(--success); font-weight: 600; }
+
+.recognition-card {
+  margin-top: 12px;
+  padding: 15px 17px;
+  border: 1px solid #59705f;
+  border-radius: 8px;
+  background: #f3f7ed;
+  box-shadow: 0 4px 14px #25382b24;
+}
+
+.recognition-card[hidden] { display: none; }
+.recognition-card.error { border-color: #b65a50; background: #fff5f2; }
+.recognition-card.success { border-color: #4d8558; background: #f0f8ed; }
+
+.recognition-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.eyebrow { margin: 0 0 2px; color: var(--active); font-size: 10px; font-weight: 700; }
+.recognition-card.error .eyebrow { color: var(--danger); }
+.recognition-heading h3 { margin: 0; font-size: 17px; }
+.result-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #d8e8d7; color: var(--success); font-size: 19px; font-weight: 700; }
+.recognition-card.error .result-mark { background: #f1d9d4; color: var(--danger); }
+
+.person-details {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+#personDetails[hidden],#recordedTime[hidden],#confirmationActions[hidden] { display: none; }
+.person-details div { min-width: 0; }
+.person-details dt { color: var(--muted); font-size: 10px; font-weight: 600; }
+.person-details dd { margin: 2px 0 0; overflow-wrap: anywhere; font-size: 13px; font-weight: 600; }
+
+.recorded-time { margin-top: 11px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.confirmation-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 13px; }
+.confirm-button,.cancel-button { min-height: 39px; padding: 7px 15px; border: 1px solid #65756a; border-radius: 5px; font: 600 13px "Poppins", sans-serif; cursor: pointer; }
+.confirm-button { border-color: var(--active); background: var(--active); color: #fff; }
+.confirm-button:disabled { border-color: #8b968d; background: #9da69e; cursor: not-allowed; }
+.cancel-button { background: #fff; color: var(--ink); }
+
+@media (max-width: 700px) {
+  body { padding: 8px; }
+  .station { min-height: calc(100vh - 16px); padding: 9px; border-radius: 10px; }
+  .station-header { min-height: 68px; padding: 10px; }
+  .school-logo { width: 42px; height: 42px; }
+  .brand-copy h1 { font-size: 17px; }
+  .brand-copy p { font-size: 12px; }
+  .station-status { gap: 5px; font-size: 10px; }
+  .section-heading { align-items: flex-start; flex-direction: column; }
+  .camera-frame { height: 38vh; min-height: 220px; }
+  .mode-group { gap: 8px; }
+  .mode-button { min-height: 58px; font-size: 14px; }
+  .person-details { grid-template-columns: 1fr 1fr; }
+  .confirmation-actions { display: grid; grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
